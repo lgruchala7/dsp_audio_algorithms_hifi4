@@ -1,0 +1,22 @@
+**** Full Build [pt., 14 lip 2023 12:27:18] ****
+ Project: dsp_audio_algorithms_hifi4
+ Configuration: nxp_rt600_RI2021_8_newlib
+ Build Target: Debug
+********************************
+Cleaning the build output folder "D:/Users/lgruc/xtensa/Xplorer-9.0.18-workspaces/dsp_audio_algorithms_hifi4/bin/nxp_rt600_RI2021_8_newlib/Debug"... 
+
+"D:\\Users\\lgruc\\xtensa\\XtDevTools\\install\\tools\\RI-2021.8-win32\\XtensaTools\\bin\\xt-clang++" -Wl,@D:/Users/lgruc/xtensa/Xplorer-9.0.18-workspaces/dsp_audio_algorithms_hifi4/bin/nxp_rt600_RI2021_8_newlib/Debug/objfiles.list -o D:/Users/lgruc/xtensa/Xplorer-9.0.18-workspaces/dsp_audio_algorithms_hifi4/bin/nxp_rt600_RI2021_8_newlib/Debug/dsp_audio_algorithms_hifi4 -mlsp=sim --xtensa-system=D:/Users/lgruc/xtensa/XtDevTools/install/builds/RI-2021.8-win32/nxp_rt600_RI2021_8_newlib/config --xtensa-core=nxp_rt600_RI2021_8_newlib --xtensa-params= 
+D:/Users/lgruc/xtensa/XtDevTools/install/tools/RI-2021.8-win32/XtensaTools/bin/xtensa-elf-ld.exe: D:/Users/lgruc/xtensa/XtDevTools/install/builds/RI-2021.8-win32/nxp_rt600_RI2021_8_newlib/xtensa-elf/arch/lib/crt1-sim.o:(.literal+0x28): undefined reference to `main'
+D:/Users/lgruc/xtensa/XtDevTools/install/tools/RI-2021.8-win32/XtensaTools/bin/xtensa-elf-ld.exe: D:/Users/lgruc/xtensa/XtDevTools/install/builds/RI-2021.8-win32/nxp_rt600_RI2021_8_newlib/xtensa-elf/arch/lib/crt1-sim.o: in function `_start':
+/build/tree/RI-2021.8_kuma/ib/tools/swtools-MSWin32-x86/xtensa-elf/src/xtos/crt1.S:364: undefined reference to `main'
+clang++: error: Xtensa-ld command failed with exit code 1 (use -v to see invocation)
+Time taken: 778 ms 
+
+"D:\\Users\\lgruc\\xtensa\\XtDevTools\\install\\tools\\RI-2021.8-win32\\XtensaTools\\bin\\xt-clang++" -Wl,@D:/Users/lgruc/xtensa/Xplorer-9.0.18-workspaces/dsp_audio_algorithms_hifi4/bin/nxp_rt600_RI2021_8_newlib/Debug/objfiles.list -o D:/Users/lgruc/xtensa/Xplorer-9.0.18-workspaces/dsp_audio_algorithms_hifi4/bin/nxp_rt600_RI2021_8_newlib/Debug/dsp_audio_algorithms_hifi4.minsize -mlsp=sim -Wl,-r -nostdlib --xtensa-system=D:/Users/lgruc/xtensa/XtDevTools/install/builds/RI-2021.8-win32/nxp_rt600_RI2021_8_newlib/config --xtensa-core=nxp_rt600_RI2021_8_newlib --xtensa-params= 
+D:/Users/lgruc/xtensa/XtDevTools/install/tools/RI-2021.8-win32/XtensaTools/bin/xtensa-elf-ld.exe: no input files
+clang++: error: Xtensa-ld command failed with exit code 1 (use -v to see invocation)
+Time taken: 841 ms 
+
+Build error encountered... cannot continue further.
+Total time taken: 1.322 secs
+**** Build Finished [pt., 14 lip 2023 12:27:19] ****
