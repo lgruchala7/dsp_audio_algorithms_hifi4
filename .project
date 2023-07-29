@@ -27,4 +27,14 @@
 		<nature>com.tensilica.xide.cdt.XideManagedProjectNature</nature>
 		<nature>com.tensilica.xide.cdt.XtensaCProjectExeNature</nature>
 	</natures>
+	<variableList>
+		<variable>
+			<name>copy_PARENT1</name>
+			<value>$%7BPARENT-3-PROJECT_LOC%7D</value>
+		</variable>
+		<variable>
+			<name>copy_PARENT123</name>
+			<value>$%7Bcopy_PARENT1%7D/mcuxpresso/SDK_2_13_0_MIMXRT685-AUD-EVK</value>
+		</variable>
+	</variableList>
 </projectDescription>
