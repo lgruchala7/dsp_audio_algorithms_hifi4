@@ -29,18 +29,18 @@
 //#define BOARD_XTAL_SYS_CLK_HZ 24000000U /*!< Board xtal_sys frequency in Hz */
 //#define BOARD_XTAL32K_CLK_HZ  32768U    /*!< Board xtal32K frequency in Hz */
 
-#define BUFFER_SIZE		320U
+#define BUFFER_SIZE		800U
 #define SAMPLE_RATE		48000U
 
 #define APP_MU      	MUB
 #define APP_MU_IRQn 	6
 /* Channel transmit and receive register */
-#define CHN_MU_REG_NUM 	0U
-#define APP_SEMA42		SEMA42
-#define SEMA42_GATE 	0U
-#define BOOT_FLAG 		0x01U
-#define SEMA42_LOCK_FLAG 0x02U
-#define SEMA42_DSP_LOCK_FLAG 0x03U
+#define CHN_MU_REG_NUM 			0U
+#define APP_SEMA42				SEMA42
+#define SEMA42_GATE 			0U
+#define BOOT_FLAG 				0x01U
+#define SEMA42_LOCK_FLAG 		0x02U
+#define SEMA42_DSP_LOCK_FLAG 	0x03U
 /* How many message is used to test message sending */
 #define MSG_LENGTH 		1U
 
@@ -50,7 +50,7 @@
  ******************************************************************************/
 enum {
 	SRC_BUFFER_RCV,
-	DST_BUFFER_RCV,
+	DST_BUFFER_SEND,
 	RUN,
 	STAGES_MAX,
 };
@@ -59,9 +59,7 @@ enum {
  * Prototypes
  ******************************************************************************/
 void APP_MU_IRQHandler_0();
-void APP_MU_IRQHandler_1();
 //static void measure_algorithm_time_16(void (*algorithm_func)(uint16_t *, size_t), uint16_t * buffer, size_t buffer_size, uint32_t iterations);
-static void test_cmsis_dsp(float32_t * src_arr, float32_t * dst_arr, uint32_t arr_size, uint32_t fs, uint32_t iterations);
 static void test_drc_algorithm(int16_t * src_arr, int16_t * dst_arr, uint32_t arr_size, uint32_t fs, uint32_t iterations);
 
 /*******************************************************************************
@@ -74,17 +72,23 @@ extern int NonCacheable_init_start, NonCacheable_init_end;
 AT_NONCACHEABLE_SECTION_ALIGN(static int16_t src_buffer[BUFFER_SIZE], 4);
 AT_NONCACHEABLE_SECTION_ALIGN(static int16_t dst_buffer[BUFFER_SIZE], 4);
 #else
-//SDK_ALIGN(static uint8_t s_buffer[BUFFER_SIZE * BUFFER_NUM], 4);
+SDK_ALIGN(static uint8_t s_buffer[BUFFER_SIZE * BUFFER_NUM], 4);
 #endif
 static float32_t src_test_arr_f32[BUFFER_SIZE] = {0.0f};
 static float32_t dst_test_arr_f32[BUFFER_SIZE] = {0.0f};
 static int16_t src_test_arr_16[BUFFER_SIZE] = {0};
 static int16_t dst_test_arr_16[BUFFER_SIZE] = {0};
 
-volatile float32_t * src_shared_buffer = NULL;
-volatile float32_t * dst_shared_buffer = NULL;
+#ifndef Q31
+arm_fir_instance_f32 fir_instance_f32;
+volatile float32_t * src_shared_buffer_f32 = NULL;
+AT_NONCACHEABLE_SECTION_ALIGN(float32_t dst_shared_buffer_f32[BUFFER_SIZE], 4) = {0.0f};
+#else
+arm_fir_instance_q31 fir_instance_q31;
+volatile q31_t * src_shared_buffer_q31 = NULL;
+AT_NONCACHEABLE_SECTION_ALIGN(q31_t dst_shared_buffer_q31[BUFFER_SIZE], 4) = {0.0f};
+#endif
 
-arm_fir_instance_f32 fir_instance;
 uint32_t num_blocks = BUFFER_SIZE / BLOCK_SIZE;
 
 volatile static int start_processing = 0;
@@ -121,40 +125,32 @@ void APP_MU_IRQHandler_0(void)
 {
     uint32_t flag = MU_GetStatusFlags(APP_MU);
 
-    if ((flag & kMU_Rx0FullFlag) == kMU_Rx0FullFlag)
+    if (((flag & kMU_Rx0FullFlag) == kMU_Rx0FullFlag) && (program_stage == SRC_BUFFER_RCV))
     {
-        switch (program_stage)
-        {
-        	case SRC_BUFFER_RCV:
-        		src_shared_buffer = (float32_t *)MU_ReceiveMsgNonBlocking(APP_MU, CHN_MU_REG_NUM);
-        		program_stage = DST_BUFFER_RCV;
-        		break;
-        	case DST_BUFFER_RCV:
-        		dst_shared_buffer = (float32_t *)MU_ReceiveMsgNonBlocking(APP_MU, CHN_MU_REG_NUM);
-        		program_stage = RUN;
-        	    MU_EnableInterrupts(APP_MU, kMU_Tx0EmptyInterruptEnable);
-				MU_DisableInterrupts(APP_MU, kMU_Rx0FullInterruptEnable);
-        		break;
-        	case RUN:
-        	default:
-        		exit(-2);
-        		break;
-        }
+#ifndef Q31
+		src_shared_buffer_f32 = (float32_t *)MU_ReceiveMsgNonBlocking(APP_MU, CHN_MU_REG_NUM);
+#else
+		src_shared_buffer_q31 = (q31_t *)MU_ReceiveMsgNonBlocking(APP_MU, CHN_MU_REG_NUM);
+#endif
+		MU_ClearStatusFlags(APP_MU, kMU_Rx0FullFlag);
+		MU_DisableInterrupts(APP_MU, kMU_Rx0FullInterruptEnable);
+		MU_EnableInterrupts(APP_MU, kMU_Tx0EmptyInterruptEnable);
+		program_stage = DST_BUFFER_SEND;
     }
-    else if (((flag & kMU_Tx0EmptyFlag) == kMU_Tx0EmptyFlag))
+    else if (((flag & kMU_Tx0EmptyFlag) == kMU_Tx0EmptyFlag) && (program_stage == DST_BUFFER_SEND))
     {
-        switch (program_stage)
-        {
-        	case RUN:
-        		MU_SendMsgNonBlocking(APP_MU, CHN_MU_REG_NUM, 1U);
-				MU_DisableInterrupts(APP_MU, kMU_Tx0EmptyInterruptEnable);
-        		break;
-        	case SRC_BUFFER_RCV:
-        	case DST_BUFFER_RCV:
-        	default:
-        		exit(-2);
-        		break;
-        }
+    	MU_ClearStatusFlags(APP_MU, kMU_Tx0EmptyFlag);
+		MU_DisableInterrupts(APP_MU, kMU_Tx0EmptyInterruptEnable);
+#ifndef Q31
+		MU_SendMsgNonBlocking(APP_MU, CHN_MU_REG_NUM, (uint32_t)dst_shared_buffer_f32);
+#else
+		MU_SendMsgNonBlocking(APP_MU, CHN_MU_REG_NUM, (uint32_t)dst_shared_buffer_q31);
+#endif
+		program_stage = RUN;
+    }
+    else
+    {
+    	PRINTF("Unexpected interrupt\r\n");
     }
 }
 
@@ -197,12 +193,11 @@ void APP_MU_IRQHandler_1(void)
  */
 int main(void)
 {
-//    /* Disable DSP cache for noncacheable sections. */
-//    xthal_set_region_attribute((uint32_t *)&NonCacheable_start,
-//                               (uint32_t)&NonCacheable_end - (uint32_t)&NonCacheable_start, XCHAL_CA_BYPASS, 0);
-//    xthal_set_region_attribute((uint32_t *)&NonCacheable_init_start,
-//                               (uint32_t)&NonCacheable_init_end - (uint32_t)&NonCacheable_init_start, XCHAL_CA_BYPASS,
-//                               0);
+    /* Disable DSP cache for noncacheable sections. */
+    xthal_set_region_attribute((uint32_t *)&NonCacheable_start,
+                               (uint32_t)&NonCacheable_end - (uint32_t)&NonCacheable_start, XCHAL_CA_BYPASS, 0);
+    xthal_set_region_attribute((uint32_t *)&NonCacheable_init_start,
+                               (uint32_t)&NonCacheable_init_end - (uint32_t)&NonCacheable_init_start, XCHAL_CA_BYPASS, 0);
 
     xos_start_main("main", 7, 0);
     INPUTMUX_Init(INPUTMUX);
@@ -211,14 +206,7 @@ int main(void)
     XOS_Init();
 
     check_coefficients();
-
-//    /* Map DMA IRQ handler to INPUTMUX selection DSP_INT0_SEL18
-//     * EXTINT19 = DSP INT 23 */
-//    xos_register_interrupt_handler(XCHAL_EXTINT19_NUM, (XosIntFunc *)CTIMER1_IRQHandler, NULL);
-//    xos_interrupt_enable(XCHAL_EXTINT19_NUM);
-
     calculate_coefficients();
-//    BOARD_InitClock();
 
     /* MUB init */
     MU_Init(APP_MU);
@@ -228,20 +216,18 @@ int main(void)
 
     SEMA42_Init(APP_SEMA42);
 
-    arm_fir_init_f32(&fir_instance, FIR_COEFF_COUNT, (float32_t *)&fir_filter_coeff[0], &fir_state[0], block_size);
+#ifndef Q31
+    arm_fir_init_f32(&fir_instance_f32, FIR_COEFF_COUNT, (float32_t *)&fir_filter_coeff_f32[0], &fir_state_f32[0], BLOCK_SIZE);
+#else
+    arm_float_to_q31(fir_filter_coeff_f32, fir_filter_coeff_q31, FIR_COEFF_COUNT);
+    arm_fir_init_q31(&fir_instance_q31, FIR_COEFF_COUNT, (q31_t *)&fir_filter_coeff_q31[0], &fir_state_q31[0], BLOCK_SIZE);
+#endif
 
     /* Send flag to CM33 core to indicate DSP Core has startup */
     MU_SetFlags(APP_MU, BOOT_FLAG);
 
     /* Enable transmit and receive interrupt */
     MU_EnableInterrupts(APP_MU, (kMU_Rx0FullInterruptEnable));
-
-
-//    test_cmsis_dsp(src_test_arr_f32, dst_test_arr_f32, BUFFER_SIZE, SAMPLE_RATE, ITER_COUNT);
-//    test_drc_algorithm(src_test_arr_16, dst_test_arr_16, BUFFER_SIZE, SAMPLE_RATE, ITER_COUNT);
-//    MU_SendMsgNonBlocking(APP_MU, CHN_MU_REG_NUM, msg_recv[cur_send++]);
-//    start_processing = 0;
-//    MU_EnableInterrupts(APP_MU, (kMU_Tx0EmptyInterruptEnable));
 
     while (1)
     {
@@ -254,53 +240,14 @@ int main(void)
 
 		for (uint32_t j = 0; j < num_blocks; j++)
 		{
-			arm_fir_f32(&fir_instance, src_shared_buffer + (j * block_size), dst_shared_buffer + (j * block_size), block_size);
+#ifndef Q31
+			arm_fir_f32(&fir_instance_f32, (float32_t *)src_shared_buffer_f32 + (j * BLOCK_SIZE), dst_shared_buffer_f32 + (j * BLOCK_SIZE), BLOCK_SIZE);
+#else
+			arm_fir_q31(&fir_instance_q31, (q31_t *)src_shared_buffer_q31 + (j * BLOCK_SIZE), dst_shared_buffer_q31 + (j * BLOCK_SIZE), BLOCK_SIZE);
+#endif
 		}
-		print_buffer_data_f32(dst_shared_buffer, num_blocks * block_size);
 		SEMA42_Unlock(APP_SEMA42, SEMA42_GATE);
     }
-}
-
-static void test_cmsis_dsp(float32_t * src_arr, float32_t * dst_arr, uint32_t arr_size, uint32_t fs, uint32_t iterations)
-{
-//	arm_fir_instance_f32 fir_instance;
-//	uint32_t num_blocks = arr_size / BLOCK_SIZE;
-
-	float32_t freq[] 	= {9000.0f, 7000.0f, 1500.0f};
-	float32_t amp[] 	= {0.2f, 0.0f, 1.0f};
-	int freq_cnt = sizeof(freq) / sizeof(freq[0]);
-
-	generate_sine_wave_f32(&src_arr[0], arr_size, fs, (float)(INT16_MAX * 0.5), freq, amp, freq_cnt);
-
-	/* Call FIR init function to initialize the instance structure. */
-	arm_fir_init_f32(&fir_instance, FIR_COEFF_COUNT, (float32_t *)&fir_filter_coeff[0], &fir_state[0], block_size);
-
-//	print_buffer_data_f32(src_arr, arr_size);
-
-    /* Send flag to CM33 core to indicate DSP Core has startup */
-    MU_SetFlags(APP_MU, BOOT_FLAG);
-
-    /* Enable transmit and receive interrupt */
-    MU_EnableInterrupts(APP_MU, (kMU_Tx0EmptyInterruptEnable | kMU_Rx0FullInterruptEnable));
-
-    while (1 != start_processing)
-    {
-
-    }
-
-	for (uint32_t i = 0; i < iterations; i++)
-	{
-		for (uint32_t j = 0; j < num_blocks; j++)
-		{
-			arm_fir_f32(&fir_instance, src_arr + (j * block_size), dst_arr + (j * block_size), block_size);
-		}
-	}
-
-	MU_SendMsgNonBlocking(APP_MU, CHN_MU_REG_NUM, msg_recv[cur_send++]);
-	start_processing = 0;
-	MU_EnableInterrupts(APP_MU, (kMU_Tx0EmptyInterruptEnable));
-
-//	print_buffer_data_f32(dst_arr, arr_size);
 }
 
 static void test_drc_algorithm(int16_t * src_arr, int16_t * dst_arr, uint32_t arr_size, uint32_t fs, uint32_t iterations)

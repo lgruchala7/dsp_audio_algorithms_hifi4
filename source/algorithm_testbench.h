@@ -35,8 +35,9 @@ void generate_sine_wave_16(int16_t * input_vec, uint32_t vec_len, uint32_t fs, f
 /*******************************************************************************
  * Exported variables
  ******************************************************************************/
-extern const float fir_filter_coeff [FIR_COEFF_COUNT];
-extern float32_t fir_state[BLOCK_SIZE + FIR_COEFF_COUNT - 1];
-extern uint32_t block_size;
+extern const float32_t fir_filter_coeff_f32 [FIR_COEFF_COUNT];
+extern float32_t fir_state_f32[BLOCK_SIZE + FIR_COEFF_COUNT - 1];
+extern q31_t fir_filter_coeff_q31 [FIR_COEFF_COUNT];
+extern q31_t fir_state_q31[BLOCK_SIZE + FIR_COEFF_COUNT - 1];
 
 #endif /* ALGORITHM_TESTBENCH_H_ */

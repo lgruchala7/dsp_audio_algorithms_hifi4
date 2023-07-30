@@ -57,12 +57,16 @@
                 </SingleFlagMapOptions>
                 <FlagValueMapOptions>
                     <FlagValueMapEntry>
+                        <key>MaxUnroll</key>
+                        <value level="8" flag="-fswp-max-unroll=" use="true"/>
+                    </FlagValueMapEntry>
+                    <FlagValueMapEntry>
                         <key>Debug</key>
                         <value level="-3" flag="-g" use="true"/>
                     </FlagValueMapEntry>
                     <FlagValueMapEntry>
                         <key>Optimization</key>
-                        <value level="0" flag="-O" use="true"/>
+                        <value level="3" flag="-O" use="true"/>
                     </FlagValueMapEntry>
                 </FlagValueMapOptions>
                 <StringListMapOptions>
