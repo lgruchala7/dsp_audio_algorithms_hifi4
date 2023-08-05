@@ -70,28 +70,30 @@ void APP_MU_IRQHandler_0();
 extern int NonCacheable_start, NonCacheable_end;
 extern int NonCacheable_init_start, NonCacheable_init_end;
 
-uint32_t num_blocks = BUFFER_SIZE / BLOCK_SIZE;
+uint32_t num_blocks = (BUFFER_SIZE / BLOCK_SIZE / 2);
 #ifndef Q31
-arm_fir_instance_f32 fir_instance_f32;
-volatile float32_t * src_shared_buffer_1_f32 = NULL;
-volatile float32_t * src_shared_buffer_2_f32 = NULL;
+arm_fir_instance_f32 fir_instance_f32_1;
+arm_fir_instance_f32 fir_instance_f32_2;
+volatile float32_t * src_shared_buffer_f32_1 = NULL;
+volatile float32_t * src_shared_buffer_f32_2 = NULL;
 #if (XCHAL_DCACHE_SIZE > 0)
-AT_NONCACHEABLE_SECTION_ALIGN(float32_t dst_shared_buffer_1_f32[BUFFER_SIZE], 4) = {0.0f};
-AT_NONCACHEABLE_SECTION_ALIGN(float32_t dst_shared_buffer_2_f32[BUFFER_SIZE], 4) = {0.0f};
+AT_NONCACHEABLE_SECTION_ALIGN(float32_t dst_shared_buffer_f32_1[BUFFER_SIZE], 4) = {0.0f};
+AT_NONCACHEABLE_SECTION_ALIGN(float32_t dst_shared_buffer_f32_2[BUFFER_SIZE], 4) = {0.0f};
 #else
-SDK_ALIGN(float32_t dst_shared_buffer_1_f32[BUFFER_SIZE], 4) = {0.0f};
-SDK_ALIGN(float32_t dst_shared_buffer_2_f32[BUFFER_SIZE], 4) = {0.0f};
+SDK_ALIGN(float32_t dst_shared_buffer_f32_1[BUFFER_SIZE], 4) = {0.0f};
+SDK_ALIGN(float32_t dst_shared_buffer_f32_2[BUFFER_SIZE], 4) = {0.0f};
 #endif
 #else
-arm_fir_instance_q31 fir_instance_q31;
-volatile q31_t * src_shared_buffer_1_q31 = NULL;
-volatile q31_t * src_shared_buffer_2_q31 = NULL;
+arm_fir_instance_q31 fir_instance_q31_1;
+arm_fir_instance_q31 fir_instance_q31_2;
+volatile q31_t * src_shared_buffer_q31_1 = NULL;
+volatile q31_t * src_shared_buffer_q31_2 = NULL;
 #if (XCHAL_DCACHE_SIZE > 0)
-AT_NONCACHEABLE_SECTION_ALIGN(q31_t dst_shared_buffer_1_q31[BUFFER_SIZE], 4) = {0.0f};
-AT_NONCACHEABLE_SECTION_ALIGN(q31_t dst_shared_buffer_2_q31[BUFFER_SIZE], 4) = {0.0f};
+AT_NONCACHEABLE_SECTION_ALIGN(q31_t dst_shared_buffer_q31_1[BUFFER_SIZE], 4) = {0.0f};
+AT_NONCACHEABLE_SECTION_ALIGN(q31_t dst_shared_buffer_q31_2[BUFFER_SIZE], 4) = {0.0f};
 #else
-SDK_ALIGN(float32_t dst_shared_buffer_1_q31[BUFFER_SIZE], 4) = {0.0f};
-SDK_ALIGN(float32_t dst_shared_buffer_2_q31[BUFFER_SIZE], 4) = {0.0f};
+SDK_ALIGN(float32_t dst_shared_buffer_q31_1[BUFFER_SIZE], 4) = {0.0f};
+SDK_ALIGN(float32_t dst_shared_buffer_q31_2[BUFFER_SIZE], 4) = {0.0f};
 #endif
 #endif
 
@@ -123,9 +125,9 @@ void APP_MU_IRQHandler_0(void)
     		case SRC_BUFFER_1_RCV:
     		{
 				#ifndef Q31
-				src_shared_buffer_1_f32 = (float32_t *)MU_ReceiveMsgNonBlocking(APP_MU, CHN_MU_REG_NUM);
+				src_shared_buffer_f32_1 = (float32_t *)MU_ReceiveMsgNonBlocking(APP_MU, CHN_MU_REG_NUM);
 				#else
-				src_shared_buffer_1_q31 = (q31_t *)MU_ReceiveMsgNonBlocking(APP_MU, CHN_MU_REG_NUM);
+				src_shared_buffer_q31_1 = (q31_t *)MU_ReceiveMsgNonBlocking(APP_MU, CHN_MU_REG_NUM);
 				#endif
 				program_stage = SRC_BUFFER_2_RCV;
 				break;
@@ -134,9 +136,9 @@ void APP_MU_IRQHandler_0(void)
     		{
 				MU_DisableInterrupts(APP_MU, kMU_Rx0FullInterruptEnable);
 				#ifndef Q31
-				src_shared_buffer_2_f32 = (float32_t *)MU_ReceiveMsgNonBlocking(APP_MU, CHN_MU_REG_NUM);
+				src_shared_buffer_f32_2 = (float32_t *)MU_ReceiveMsgNonBlocking(APP_MU, CHN_MU_REG_NUM);
 				#else
-				src_shared_buffer_2_q31 = (q31_t *)MU_ReceiveMsgNonBlocking(APP_MU, CHN_MU_REG_NUM);
+				src_shared_buffer_q31_2 = (q31_t *)MU_ReceiveMsgNonBlocking(APP_MU, CHN_MU_REG_NUM);
 				#endif
 				MU_EnableInterrupts(APP_MU, kMU_Tx0EmptyInterruptEnable);
 				program_stage = DST_BUFFER_1_SEND;
@@ -158,9 +160,9 @@ void APP_MU_IRQHandler_0(void)
     		case DST_BUFFER_1_SEND:
     		{
     			#ifndef Q31
-    			MU_SendMsgNonBlocking(APP_MU, CHN_MU_REG_NUM, (uint32_t)dst_shared_buffer_1_f32);
+    			MU_SendMsgNonBlocking(APP_MU, CHN_MU_REG_NUM, (uint32_t)dst_shared_buffer_f32_1);
     			#else
-    			MU_SendMsgNonBlocking(APP_MU, CHN_MU_REG_NUM, (uint32_t)dst_shared_buffer_1_q31);
+    			MU_SendMsgNonBlocking(APP_MU, CHN_MU_REG_NUM, (uint32_t)dst_shared_buffer_q31_1);
     			#endif
     			program_stage = DST_BUFFER_2_SEND;
     			break;
@@ -169,9 +171,9 @@ void APP_MU_IRQHandler_0(void)
     		{
     			MU_DisableInterrupts(APP_MU, kMU_Tx0EmptyInterruptEnable);
     			#ifndef Q31
-    			MU_SendMsgNonBlocking(APP_MU, CHN_MU_REG_NUM, (uint32_t)dst_shared_buffer_2_f32);
+    			MU_SendMsgNonBlocking(APP_MU, CHN_MU_REG_NUM, (uint32_t)dst_shared_buffer_f32_2);
     			#else
-    			MU_SendMsgNonBlocking(APP_MU, CHN_MU_REG_NUM, (uint32_t)dst_shared_buffer_2_q31);
+    			MU_SendMsgNonBlocking(APP_MU, CHN_MU_REG_NUM, (uint32_t)dst_shared_buffer_q31_2);
     			#endif
     			program_stage = RUN;
     			break;
@@ -212,10 +214,12 @@ int main(void)
     SEMA42_Init(APP_SEMA42);
 
 	#ifndef Q31
-    arm_fir_init_f32(&fir_instance_f32, FIR_COEFF_COUNT, (float32_t *)&fir_filter_coeff_f32[0], &fir_state_f32[0], BLOCK_SIZE);
+    arm_fir_init_f32(&fir_instance_f32_1, FIR_COEFF_COUNT, (float32_t *)&fir_filter_coeff_f32[0], &fir_state_f32_1[0], BLOCK_SIZE);
+    arm_fir_init_f32(&fir_instance_f32_2, FIR_COEFF_COUNT, (float32_t *)&fir_filter_coeff_f32[0], &fir_state_f32_2[0], BLOCK_SIZE);
 	#else
     arm_float_to_q31(fir_filter_coeff_f32, fir_filter_coeff_q31, FIR_COEFF_COUNT);
-    arm_fir_init_q31(&fir_instance_q31, FIR_COEFF_COUNT, (q31_t *)&fir_filter_coeff_q31[0], &fir_state_q31[0], BLOCK_SIZE);
+    arm_fir_init_q31(&fir_instance_q31_1, FIR_COEFF_COUNT, (q31_t *)&fir_filter_coeff_q31[0], &fir_state_q31_1[0], BLOCK_SIZE);
+    arm_fir_init_q31(&fir_instance_q31_2, FIR_COEFF_COUNT, (q31_t *)&fir_filter_coeff_q31[0], &fir_state_q31_2[0], BLOCK_SIZE);
 	#endif
 
     /* Send flag to CM33 core to indicate DSP Core has startup */
@@ -234,25 +238,29 @@ int main(void)
     	SEMA42_Lock(APP_SEMA42, SEMA42_GATE, PROC_NUM);
     	MU_SetFlags(APP_MU, SEMA42_DSP_LOCK_FLAG);
 
-		for (uint32_t j = 0; j < num_blocks; j++)
+		for (uint32_t j = 0; j < num_blocks; ++j)
 		{
 			#ifndef Q31
 			if (!is_intA)
 			{
-				arm_fir_f32(&fir_instance_f32, (float32_t *)src_shared_buffer_1_f32 + (j * BLOCK_SIZE), dst_shared_buffer_1_f32 + (j * BLOCK_SIZE), BLOCK_SIZE);
+				arm_fir_f32(&fir_instance_f32_1, (float32_t *)&src_shared_buffer_f32_1[0] + (j * BLOCK_SIZE), &dst_shared_buffer_f32_1[0] + (j * BLOCK_SIZE), BLOCK_SIZE);
+				arm_fir_f32(&fir_instance_f32_2, (float32_t *)&src_shared_buffer_f32_1[BUFFER_SIZE/2] + (j * BLOCK_SIZE), &dst_shared_buffer_f32_1[BUFFER_SIZE/2] + (j * BLOCK_SIZE), BLOCK_SIZE);
 			}
 			else
 			{
-				arm_fir_f32(&fir_instance_f32, (float32_t *)src_shared_buffer_2_f32 + (j * BLOCK_SIZE), dst_shared_buffer_2_f32 + (j * BLOCK_SIZE), BLOCK_SIZE);
+				arm_fir_f32(&fir_instance_f32_1, (float32_t *)&src_shared_buffer_f32_2[0] + (j * BLOCK_SIZE), &dst_shared_buffer_f32_2[0] + (j * BLOCK_SIZE), BLOCK_SIZE);
+				arm_fir_f32(&fir_instance_f32_2, (float32_t *)&src_shared_buffer_f32_2[BUFFER_SIZE/2] + (j * BLOCK_SIZE), &dst_shared_buffer_f32_2[BUFFER_SIZE/2] + (j * BLOCK_SIZE), BLOCK_SIZE);
 			}
 			#else
 			if (is_intA)
 			{
-				arm_fir_q31(&fir_instance_q31, (q31_t *)src_shared_buffer_1_q31 + (j * BLOCK_SIZE), dst_shared_buffer_1_q31 + (j * BLOCK_SIZE), BLOCK_SIZE);
+				arm_fir_q31(&fir_instance_q31_1, (q31_t *)&src_shared_buffer_q31_1 + (j * BLOCK_SIZE), &dst_shared_buffer_q31_1 + (j * BLOCK_SIZE), BLOCK_SIZE);
+				arm_fir_q31(&fir_instance_q31_2, (q31_t *)&src_shared_buffer_q31_1 + (j * BLOCK_SIZE), &dst_shared_buffer_q31_1 + (j * BLOCK_SIZE), BLOCK_SIZE);
 			}
 			else
 			{
-				arm_fir_q31(&fir_instance_q31, (q31_t *)src_shared_buffer_2_q31 + (j * BLOCK_SIZE), dst_shared_buffer_2_q31 + (j * BLOCK_SIZE), BLOCK_SIZE);
+				arm_fir_q31(&fir_instance_q31_1, (q31_t *)&src_shared_buffer_q31_2[0] + (j * BLOCK_SIZE), &dst_shared_buffer_q31_2[0] + (j * BLOCK_SIZE), BLOCK_SIZE);
+				arm_fir_q31(&fir_instance_q31_2, (q31_t *)&src_shared_buffer_q31_2[BUFFER_SIZE/2] + (j * BLOCK_SIZE), &dst_shared_buffer_q31_2[BUFFER_SIZE/2] + (j * BLOCK_SIZE), BLOCK_SIZE);
 			}
 			#endif
 		}
