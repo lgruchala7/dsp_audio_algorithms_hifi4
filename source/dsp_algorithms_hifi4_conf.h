@@ -12,7 +12,7 @@
  * Definitions
  ******************************************************************************/
 //#define _DEBUG
-#define _16bit
+//#define _16bit
 
 /*******************************************************************************
  * Variables
@@ -40,18 +40,18 @@
 
 #ifdef _16bit
 #define MAX_AMPL	INT16_MAX
-#elif
+#else
 #define MAX_AMPL	INT32_MAX
 #endif
 #define HALF_SQRT_2	0.707f
 
 /* limiter threshold */
-#define LT 	((float)(MAX_AMPL * 0.8f * HALF_SQRT_2))
+#define LT 	((float)MAX_AMPL * 0.8f * HALF_SQRT_2)
 /* compressor threshold */
-#define CT 	((float)(MAX_AMPL * 0.6f * HALF_SQRT_2))
+#define CT 	((float)MAX_AMPL * 0.6f * HALF_SQRT_2)
 /* expander threshold */
-#define ET 	((float)(MAX_AMPL * 0.4f * HALF_SQRT_2))
+#define ET 	((float)MAX_AMPL * 0.4f * HALF_SQRT_2)
 /* noise gate threshold */
-#define NT 	((float)(MAX_AMPL * 0.2f * HALF_SQRT_2))
+#define NT 	((float)MAX_AMPL * 0.2f * HALF_SQRT_2)
 
 #endif /* dsp_algorithms_hifi4_CONF_H_ */
