@@ -5,8 +5,8 @@
  *      Author: Lukasz
  */
 
-#ifndef ALGORITHM_TESTBENCH_H_
-#define ALGORITHM_TESTBENCH_H_
+#ifndef _ALGORITHM_TESTBENCH_H_
+#define _ALGORITHM_TESTBENCH_H_
 
 /*******************************************************************************
  * Includes
@@ -23,4 +23,4 @@ void init_arr_with_rand_16(int16_t * arr, size_t arr_size);
 void generate_sine_wave_f32(float32_t * input_vec, uint32_t vec_len, uint32_t fs, float max_amplitude, float * freq, float * amp, int freq_cnt);
 void generate_sine_wave_16(int16_t * input_vec, uint32_t vec_len, uint32_t fs, float max_amplitude, float * freq, float * amp, int freq_cnt);
 
-#endif /* ALGORITHM_TESTBENCH_H_ */
+#endif /* _ALGORITHM_TESTBENCH_H_ */

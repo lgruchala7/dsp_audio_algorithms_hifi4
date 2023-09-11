@@ -39,6 +39,10 @@
             <CompilerOptions>
                 <SingleFlagMapOptions>
                     <SingleFlagMapEntry>
+                        <key>UseDspCoprocessor</key>
+                        <value flag="-mcoproc" use="true"/>
+                    </SingleFlagMapEntry>
+                    <SingleFlagMapEntry>
                         <key>SignCharType</key>
                         <value flag="-fsigned-char" use="true"/>
                     </SingleFlagMapEntry>
@@ -47,16 +51,16 @@
                         <value flag="-Wall" use="true"/>
                     </SingleFlagMapEntry>
                     <SingleFlagMapEntry>
-                        <key>UseDspCoprocessor</key>
-                        <value flag="-mcoproc" use="true"/>
-                    </SingleFlagMapEntry>
-                    <SingleFlagMapEntry>
                         <key>ExtraWarning</key>
-                        <value flag="-Wextra" use="false"/>
+                        <value flag="-Wextra" use="true"/>
                     </SingleFlagMapEntry>
                     <SingleFlagMapEntry>
                         <key>CompilerVariant</key>
                         <value flag="none" use="true"/>
+                    </SingleFlagMapEntry>
+                    <SingleFlagMapEntry>
+                        <key>CompilerPlaceLiteralinText</key>
+                        <value flag="-mtext-section-literals" use="true"/>
                     </SingleFlagMapEntry>
                 </SingleFlagMapOptions>
                 <FlagValueMapOptions>
@@ -78,6 +82,7 @@
                         <key>CompilerAdditionalOptions</key>
                         <value flag="" inheritance="append">
                             <ListEntry>-Wno-missing-braces&#13;
+-Wpedantic&#13;
 -fmessage-length=0&#13;
 -std=gnu99</ListEntry>
                         </value>

@@ -11,7 +11,7 @@
 #include "fsl_debug_console.h"
 #include "fsl_device_registers.h"
 
-#include "dsp_algorithms_hifi4.h"
+#include "drc_algorithms.h"
 #include "algorithm_testbench.h"
 #include "filters_cfg.h"
 

@@ -1,48 +1,80 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <xxProperties>
-                        
+                                        
+    
+    
+    
+    
     
     
     
     
     <propertyGroup name="project.information">
-                                                
+                                                                                
+        
+        
+        
+        
         
         
         
         
         <version value="3.0"/>
-                                            
+                                                                            
+    
+    
+    
+    
     
     
     
     
     </propertyGroup>
-                        
+                                        
+    
+    
+    
+    
     
     
     
     
     <propertyGroup name="build.property">
-                                                
+                                                                                
+        
+        
+        
+        
         
         
         
         
         <buildTarget defaultTarget="Debug"/>
-                                            
+                                                                            
+    
+    
+    
+    
     
     
     
     
     </propertyGroup>
-                        
+                                        
+    
+    
+    
+    
     
     
     
     
     <propertyGroup name="build.exclusion.data">
-                                                
+                                                                                
+        
+        
+        
+        
         
         
         
@@ -55,13 +87,7 @@
                 <excludedEntry data="/.*/bin/.*"/>
                 <excludedEntry data="/.*/CMSIS/DSP/Source/FilteringFunctions/arm_biquad_cascade_df1_32x64_init_q31\.c"/>
                 <excludedEntry data="/.*/CMSIS/DSP/Source/FilteringFunctions/arm_biquad_cascade_df1_32x64_q31\.c"/>
-                <excludedEntry data="/.*/CMSIS/DSP/Source/FilteringFunctions/arm_biquad_cascade_df1_f32\.c"/>
                 <excludedEntry data="/.*/CMSIS/DSP/Source/FilteringFunctions/arm_biquad_cascade_df1_fast_q31\.c"/>
-                <excludedEntry data="/.*/CMSIS/DSP/Source/FilteringFunctions/arm_biquad_cascade_df1_init_f32\.c"/>
-                <excludedEntry data="/.*/CMSIS/DSP/Source/FilteringFunctions/arm_biquad_cascade_df1_init_q31\.c"/>
-                <excludedEntry data="/.*/CMSIS/DSP/Source/FilteringFunctions/arm_biquad_cascade_df1_q31\.c"/>
-                <excludedEntry data="/.*/CMSIS/DSP/Source/FilteringFunctions/arm_biquad_cascade_df2T_f32\.c"/>
-                <excludedEntry data="/.*/CMSIS/DSP/Source/FilteringFunctions/arm_biquad_cascade_df2T_init_f32\.c"/>
                 <excludedEntry data="/.*/CMSIS/DSP/Source/FilteringFunctions/arm_biquad_cascade_stereo_df2T_f32\.c"/>
                 <excludedEntry data="/.*/CMSIS/DSP/Source/FilteringFunctions/arm_biquad_cascade_stereo_df2T_init_f32\.c"/>
                 <excludedEntry data="/.*/CMSIS/DSP/Source/FilteringFunctions/arm_fir_decimate_f32\.c"/>
@@ -72,7 +98,6 @@
                 <excludedEntry data="/.*/CMSIS/DSP/Source/FilteringFunctions/arm_iir_lattice_init_q31\.c"/>
                 <excludedEntry data="/.*/CMSIS/DSP/Source/FilteringFunctions/arm_iir_lattice_q31\.c"/>
                 <excludedEntry data="/.*/CMSIS/DSP/Source/BasicMathFunctions/arm_abs_f32\.c"/>
-                <excludedEntry data="/.*/CMSIS/DSP/Source/BasicMathFunctions/arm_abs_q31\.c"/>
                 <excludedEntry data="/.*/CMSIS/DSP/Source/BasicMathFunctions/arm_add_f32\.c"/>
                 <excludedEntry data="/.*/CMSIS/DSP/Source/BasicMathFunctions/arm_add_q31\.c"/>
                 <excludedEntry data="/.*/CMSIS/DSP/Source/BasicMathFunctions/arm_dot_prod_f32\.c"/>
@@ -84,8 +109,7 @@
                 <excludedEntry data="/.*/CMSIS/DSP/Source/FastMathFunctions/arm_sqrt_q31\.c"/>
                 <excludedEntry data="/.*/CMSIS/DSP/Source/FastMathFunctions/arm_vexp_f32\.c"/>
                 <excludedEntry data="/.*/CMSIS/DSP/Source/FastMathFunctions/arm_vlog_f32\.c"/>
-                <excludedEntry data="/.*/CMSIS/DSP/Source/SupportFunctions/arm_fill_f32\.c"/>
-                <excludedEntry data="/.*/CMSIS/DSP/Source/SupportFunctions/arm_fill_q31\.c"/>
+                <excludedEntry data="/.*/CMSIS/DSP/Source/FilteringFunctions/arm_fir_fast_q31\.c"/>
             </exclusionSet>
             <exclusionSet name="Set_Release" selected="0" target="Release">
                 <excludedEntry data="/.*/bin/.*"/>
@@ -122,6 +146,7 @@
                 <excludedEntry data="/.*/CMSIS/DSP/Source/FastMathFunctions/arm_vlog_f32\.c"/>
                 <excludedEntry data="/.*/CMSIS/DSP/Source/SupportFunctions/arm_fill_f32\.c"/>
                 <excludedEntry data="/.*/CMSIS/DSP/Source/SupportFunctions/arm_fill_q31\.c"/>
+                <excludedEntry data="/.*/CMSIS/DSP/Source/FilteringFunctions/arm_fir_fast_q31\.c"/>
             </exclusionSet>
             <exclusionSet name="Set_ReleaseSize" selected="0" target="ReleaseSize">
                 <excludedEntry data="/.*/bin/.*"/>
@@ -158,44 +183,73 @@
                 <excludedEntry data="/.*/CMSIS/DSP/Source/FastMathFunctions/arm_vlog_f32\.c"/>
                 <excludedEntry data="/.*/CMSIS/DSP/Source/SupportFunctions/arm_fill_f32\.c"/>
                 <excludedEntry data="/.*/CMSIS/DSP/Source/SupportFunctions/arm_fill_q31\.c"/>
+                <excludedEntry data="/.*/CMSIS/DSP/Source/FilteringFunctions/arm_fir_fast_q31\.c"/>
             </exclusionSet>
         </buildExclusionDatas>
-                                            
+                                                                            
+    
+    
+    
+    
     
     
     
     
     </propertyGroup>
-                        
+                                        
+    
+    
+    
+    
     
     
     
     
     <propertyGroup name="build.auto.includes">
-                                                
+                                                                                
+        
+        
+        
+        
         
         
         
         
         <exportDirs autoConsumeDirs="true" includeDepDirs="true" mode="auto"/>
-                                            
+                                                                            
+    
+    
+    
+    
     
     
     
     
     </propertyGroup>
-                    
+                                    
+    
+    
+    
+    
     
     
     
     
     <propertyGroup name="library.dependencies"/>
-                    
+                                    
+    
+    
+    
+    
     
     
     
     <propertyGroup name="build.custom.steps"/>
-                
+                                
+
+
+
+
 
 
 
