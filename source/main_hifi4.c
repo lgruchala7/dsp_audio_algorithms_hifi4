@@ -39,10 +39,10 @@
 #define APP_SEMA42				SEMA42
 #define SEMA42_GATE 			0U
 #define BOOT_FLAG 				0x01U
-#define SEMA42_LOCK_FLAG 		0x02U
-#define SEMA42_UNLOCK_FLAG		0x03U
-#define SEMA42_DSP_LOCK_FLAG 	0x04U
-#define SEMA42_DSP_UNLOCK_FLAG 	0x05U
+#define MU_LOCK_FLAG 			0x02U
+#define MU_UNLOCK_FLAG			0x03U
+#define MU_DSP_LOCK_FLAG 		0x04U
+#define MU_DSP_UNLOCK_FLAG 		0x05U
 
 /*******************************************************************************
  * Type definitions
@@ -199,15 +199,19 @@ int main(void)
     /* Send flag to CM33 core to indicate DSP Core has startup */
     MU_SetFlags(APP_MU, BOOT_FLAG);
 
+    while (BOOT_FLAG != MU_GetFlags(APP_MU))
+    {
+    }
+
     /* Enable transmit and receive interrupt */
     MU_EnableInterrupts(APP_MU, (kMU_Tx0EmptyInterruptEnable));
 
     while (1)
     {
 
-    	MU_SetFlags(APP_MU, SEMA42_DSP_LOCK_FLAG);
+    	MU_SetFlags(APP_MU, MU_DSP_LOCK_FLAG);
 
-		while (SEMA42_UNLOCK_FLAG != MU_GetFlags(APP_MU))
+		while (MU_UNLOCK_FLAG != MU_GetFlags(APP_MU))
 		{
 		}
 
@@ -230,14 +234,14 @@ int main(void)
 			#endif
 
 			#if Q31_USED
-//					fir_process_batch((q31_t *)src_buffer_q31_1, (q31_t *)dst_buffer_q31_1);
-//					iir_df1_process_batch((q31_t *)src_buffer_q31_1, (q31_t *)dst_buffer_q31_1);
-			drc_full_stereo_balanced((q31_t *)src_buffer_q31_1, (q31_t *)dst_buffer_q31_1);
+			fir_process_batch((q31_t *)src_buffer_q31_1, (q31_t *)dst_buffer_q31_1);
+//			iir_df1_process_batch((q31_t *)src_buffer_q31_1, (q31_t *)dst_buffer_q31_1);
+//			drc_full_stereo_balanced((q31_t *)src_buffer_q31_1, (q31_t *)dst_buffer_q31_1);
 			#else
-//					fir_process_batch((float32_t *)src_buffer_f32_1, (float32_t *)dst_buffer_f32_1);
-//					iir_df1_process_batch((float32_t *)src_buffer_f32_1, (float32_t *)dst_buffer_f32_1);
-//					iir_df2T_process_batch((float32_t *)src_buffer_f32_1, (float32_t *)dst_buffer_f32_1);
-//			drc_full_stereo_balanced((float32_t *)src_buffer_f32_1, (float32_t *)dst_buffer_f32_1);
+//			fir_process_batch((float32_t *)src_buffer_f32_1, (float32_t *)dst_buffer_f32_1);
+//			iir_df1_process_batch((float32_t *)src_buffer_f32_1, (float32_t *)dst_buffer_f32_1);
+//			iir_df2T_process_batch((float32_t *)src_buffer_f32_1, (float32_t *)dst_buffer_f32_1);
+			drc_full_stereo_balanced((float32_t *)src_buffer_f32_1, (float32_t *)dst_buffer_f32_1);
 			#endif
 
 			#if Q31_USED
@@ -271,14 +275,14 @@ int main(void)
 			#endif
 
 			#if Q31_USED
-//					fir_process_batch((q31_t *)src_buffer_q31_2, (q31_t *)dst_buffer_q31_2);
-//					iir_df1_process_batch((q31_t *)src_buffer_q31_2, (q31_t *)dst_buffer_q31_2);
-			drc_full_stereo_balanced((q31_t *)src_buffer_q31_2, (q31_t *)dst_buffer_q31_2);
+			fir_process_batch((q31_t *)src_buffer_q31_2, (q31_t *)dst_buffer_q31_2);
+//			iir_df1_process_batch((q31_t *)src_buffer_q31_2, (q31_t *)dst_buffer_q31_2);
+//			drc_full_stereo_balanced((q31_t *)src_buffer_q31_2, (q31_t *)dst_buffer_q31_2);
 			#else
-//					fir_process_batch((float32_t *)src_buffer_f32_2, (float32_t *)dst_buffer_f32_2);
-//					iir_df1_process_batch((float32_t *)src_buffer_f32_2, (float32_t *)dst_buffer_f32_2);
-//					iir_df2T_process_batch((float32_t *)src_buffer_f32_2, (float32_t *)dst_buffer_f32_2);
-//			drc_full_stereo_balanced((float32_t *)src_buffer_f32_2, (float32_t *)dst_buffer_f32_2);
+//			fir_process_batch((float32_t *)src_buffer_f32_2, (float32_t *)dst_buffer_f32_2);
+//			iir_df1_process_batch((float32_t *)src_buffer_f32_2, (float32_t *)dst_buffer_f32_2);
+//			iir_df2T_process_batch((float32_t *)src_buffer_f32_2, (float32_t *)dst_buffer_f32_2);
+			drc_full_stereo_balanced((float32_t *)src_buffer_f32_2, (float32_t *)dst_buffer_f32_2);
 			#endif
 
 			#if Q31_USED
@@ -296,10 +300,10 @@ int main(void)
 			#endif
 		}
 
-		MU_SetFlags(APP_MU, SEMA42_DSP_UNLOCK_FLAG);
+		MU_SetFlags(APP_MU, MU_DSP_UNLOCK_FLAG);
 		SEMA42_Unlock(APP_SEMA42, SEMA42_GATE);
 
-		while (SEMA42_LOCK_FLAG != MU_GetFlags(APP_MU))
+		while (MU_LOCK_FLAG != MU_GetFlags(APP_MU))
 		{
 		}
 

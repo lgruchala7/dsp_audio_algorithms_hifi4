@@ -51,7 +51,7 @@
 #define TABLE_SIZE      	4096
 #define SCALE_FACTOR	   	8
 #define SCALE_FACTOR_SHIFT  3 /* log2(SCALE_FACTOR) */
-#define LUT_MIN_LN         	0.006738f
+#define LUT_MIN_LN         	0.000335461f
 #define LUT_MIN_LN_Q31     	0x00dcca71
 #define LUT_MAX_LN         	1.0f
 #define LUT_RANGE_LN       	0x7f23358f
@@ -104,8 +104,10 @@ const static float32_t LN_OF_2 = 0.693147f;
 #if !(Q31_USED)
 static float32_t AT;
 static float32_t RT;
-static float32_t RT_ctrl_factor;
-static float32_t AT_ctrl_factor;
+static float32_t RT_ctrl_factor_1;
+static float32_t AT_ctrl_factor_1;
+static float32_t RT_ctrl_factor_2;
+static float32_t AT_ctrl_factor_2;
 static float32_t TAV;
 static float32_t log2_LT;
 static float32_t log2_CT;
@@ -121,8 +123,10 @@ static float32_t one_minus_TAV;
 const static q31_t LN_OF_2_Q31 = (q31_t)0x58b90bfc;
 static q31_t AT;
 static q31_t RT;
-static q31_t RT_ctrl_factor;
-static q31_t AT_ctrl_factor;
+static q31_t RT_ctrl_factor_1;
+static q31_t AT_ctrl_factor_1;
+static q31_t RT_ctrl_factor_2;
+static q31_t AT_ctrl_factor_2;
 static q31_t TAV;
 static float32_t log2_LT_scaled_f32;
 static float32_t log2_CT_scaled_f32;
@@ -193,8 +197,10 @@ void calculate_coefficients(void)
 	AT = (float32_t)(1.0 - exp(-2.2 * 1000.0 / (t_at_ms * fs_hz)));
 	RT = (float32_t)(1.0 - exp(-2.2 * 1000.0 / (t_re_ms * fs_hz)));
 	TAV = (float32_t)(1.0 - exp((-2.2 * 1000.0) / (t_tav_ms * fs_hz)));
-	AT_ctrl_factor = (float32_t)(1.0 - exp(-2.2 * 1000.0 / ((t_at_cf_ms) * fs_hz)));
-	RT_ctrl_factor = (float32_t)(1.0 - exp(-2.2 * 1000.0 / ((t_re_cf_ms) * fs_hz)));
+	AT_ctrl_factor_1 = (float32_t)(1.0 - exp(-2.2 * 1000.0 / ((t_at_cf_1_ms) * fs_hz)));
+	RT_ctrl_factor_1 = (float32_t)(1.0 - exp(-2.2 * 1000.0 / ((t_re_cf_1_ms) * fs_hz)));
+	AT_ctrl_factor_2 = (float32_t)(1.0 - exp(-2.2 * 1000.0 / ((t_at_cf_2_ms) * fs_hz)));
+	RT_ctrl_factor_2 = (float32_t)(1.0 - exp(-2.2 * 1000.0 / ((t_re_cf_2_ms) * fs_hz)));
 
 	float32_t lt = LT, ct = CT, et = ET, nt = NT, nt_mute = NT_MUTE;
 
@@ -212,20 +218,23 @@ void calculate_coefficients(void)
 	ES_times_diff_ET_NT = (ES * diff_ET_NT);
 	CS_times_diff_CT_LT = (CS * diff_CT_LT);
 	#else
-	float32_t AT_f32, RT_f32, TAV_f32, AT_ctrl_factor_f32, RT_ctrl_factor_f32;
-	q31_t ES_times_diff_ET_NT, CS_times_diff_CT_LT;
+	float32_t AT_f32, RT_f32, TAV_f32, AT_ctrl_factor_1_f32, RT_ctrl_factor_1_f32, AT_ctrl_factor_2_f32, RT_ctrl_factor_2_f32;
 
 	AT_f32 = (float32_t)(1.0 - expf(-2.2f * 1000.0f / (t_at_ms * fs_hz)));
 	RT_f32 = (float32_t)(1.0 - expf(-2.2f * 1000.0f / (t_re_ms * fs_hz)));
 	TAV_f32 = (float32_t)(1.0 - expf((-2.2f * 1000.0f) / (t_tav_ms * fs_hz)));
-	AT_ctrl_factor_f32 = (float32_t)(1.0 - expf(-2.2f * 1000.0f / ((t_at_ms) * fs_hz)));
-	RT_ctrl_factor_f32 = (float32_t)(1.0 - expf(-2.2 * 1000.0f / ((t_re_ms) * fs_hz)));
+	AT_ctrl_factor_1_f32 = (float32_t)(1.0f - expf(-2.2f * 1000.0f / ((t_at_cf_1_ms) * fs_hz)));
+	RT_ctrl_factor_1_f32 = (float32_t)(1.0f - expf(-2.2f * 1000.0f / ((t_re_cf_1_ms) * fs_hz)));
+	AT_ctrl_factor_2_f32 = (float32_t)(1.0f - expf(-2.2f * 1000.0f / ((t_at_cf_2_ms) * fs_hz)));
+	RT_ctrl_factor_2_f32 = (float32_t)(1.0f - expf(-2.2f * 1000.0f / ((t_re_cf_2_ms) * fs_hz)));
 
 	arm_float_to_q31(&AT_f32, &AT, 1);
 	arm_float_to_q31(&RT_f32, &RT, 1);
 	arm_float_to_q31(&TAV_f32, &TAV, 1);
-	arm_float_to_q31(&AT_ctrl_factor_f32, &AT_ctrl_factor, 1);
-	arm_float_to_q31(&RT_ctrl_factor_f32, &RT_ctrl_factor, 1);
+	arm_float_to_q31(&AT_ctrl_factor_1_f32, &AT_ctrl_factor_1, 1);
+	arm_float_to_q31(&RT_ctrl_factor_1_f32, &RT_ctrl_factor_1, 1);
+	arm_float_to_q31(&AT_ctrl_factor_2_f32, &AT_ctrl_factor_2, 1);
+	arm_float_to_q31(&RT_ctrl_factor_2_f32, &RT_ctrl_factor_2, 1);
 
 	q31_t lt = LT, ct = CT, et = ET, nt = NT, nt_mute = NT_MUTE;
 	float32_t lt_f32, ct_f32, et_f32, nt_f32, nt_mute_f32;
@@ -467,9 +476,11 @@ void drc_full_stereo_balanced(q31_t * src_signal_arr, q31_t * dst_signal_arr)
 	q31_t k;
 	int16_t shift;
 	int channel_offset = BUFFER_SIZE / 2;
+	bool is_limiter_active;
 
 	for (int i = 0; i < channel_offset; ++i)
 	{
+		is_limiter_active = false;
 		q31_t avg_sample = (q31_t)(((q63_t)src_signal_arr[i] + (q63_t)src_signal_arr[i + channel_offset]) >> 1); // >>1 ??
 		peak_log2_calculate(avg_sample, &x_peak_log2, 0U);
 		rms_log2_calculate(avg_sample, &x_rms_log2, 0U);
@@ -486,6 +497,7 @@ void drc_full_stereo_balanced(q31_t * src_signal_arr, q31_t * dst_signal_arr)
 				ctrl_factor = Q31_MUL(ctrl_factor, temp);
 			}
 			ctrl_factor = Q31_MUL(ctrl_factor, pow2_CS_times_diff_CT_LT);
+			is_limiter_active = true;
 		}
 		else if (x_rms_log2 > log2_CT_scaled)
 		{
@@ -533,16 +545,30 @@ void drc_full_stereo_balanced(q31_t * src_signal_arr, q31_t * dst_signal_arr)
 
 		if (ctrl_factor < ctrl_factor_old)
 		{
-			k = RT_ctrl_factor;
+			if (is_limiter_active)
+			{
+				k = RT_ctrl_factor_1;
+			}
+			else
+			{
+				k = RT_ctrl_factor_2;
+			}
 		}
 		else
 		{
-			k = AT_ctrl_factor;
+			if (is_limiter_active)
+			{
+				k = AT_ctrl_factor_1;
+			}
+			else
+			{
+				k = AT_ctrl_factor_2;
+			}
 		}
 
 		/* smooth control factor */
 		ctrl_factor_smooth = Q31_ADD(Q31_MUL(Q31_SUB(Q31_ONE, k), ctrl_factor_smooth), Q31_MUL(k, ctrl_factor));
-		ctrl_factor_old = ctrl_factor;
+		ctrl_factor_old = ctrl_factor_smooth;
 		/* calculate output sample */
 		dst_signal_arr[i] = Q31_MUL(src_signal_arr[i], ctrl_factor_smooth);
 		dst_signal_arr[i + channel_offset] = Q31_MUL(src_signal_arr[i + channel_offset], ctrl_factor_smooth);
@@ -560,12 +586,14 @@ void drc_full_stereo_balanced(float32_t * src_signal_arr, float32_t * dst_signal
 	float32_t ctrl_factor;
 	float32_t ctrl_factor_exp;
 	float32_t k;
-	const static int channel_offset = BUFFER_SIZE / CHANNEL_CNT;
+	static const int channel_offset = BUFFER_SIZE / CHANNEL_CNT;
+	bool is_limiter_active;
 
 	for (int i = 0; i < channel_offset; ++i)
 	{
-		float32_t avg_sample = ((src_signal_arr[i] + src_signal_arr[i + channel_offset]) / (float32_t)CHANNEL_CNT);
+		is_limiter_active = false;
 
+		float32_t avg_sample = ((src_signal_arr[i] + src_signal_arr[i + channel_offset]) / (float32_t)CHANNEL_CNT);
 		peak_log2_calculate(avg_sample, &x_peak_log2, 0U);
 		rms_log2_calculate(avg_sample, &x_rms_log2, 0U);
 
@@ -573,6 +601,7 @@ void drc_full_stereo_balanced(float32_t * src_signal_arr, float32_t * dst_signal
 		{
 			ctrl_factor_exp = LS * (log2_LT - x_peak_log2) + CS_times_diff_CT_LT;
 			ctrl_factor = powf(2.0f, ctrl_factor_exp);
+			is_limiter_active = true;
 		}
 		else if (x_rms_log2 > log2_CT)
 		{
@@ -601,16 +630,30 @@ void drc_full_stereo_balanced(float32_t * src_signal_arr, float32_t * dst_signal
 		/* determine if control factor (in/de)creasing */
 		if (ctrl_factor < ctrl_factor_old)
 		{
-			k = RT_ctrl_factor;
+			if (is_limiter_active)
+			{
+				k = RT_ctrl_factor_1;
+			}
+			else
+			{
+				k = RT_ctrl_factor_2;
+			}
 		}
 		else
 		{
-			k = AT_ctrl_factor;
+			if (is_limiter_active)
+			{
+				k = AT_ctrl_factor_1;
+			}
+			else
+			{
+				k = AT_ctrl_factor_2;
+			}
 		}
 
 		/* smooth control factor */
 		ctrl_factor_smooth = (1.0f - k) * ctrl_factor_smooth + k * ctrl_factor;
-		ctrl_factor_old = ctrl_factor;
+		ctrl_factor_old = ctrl_factor_smooth;
 		/* calculate output sample */
 		dst_signal_arr[i] = src_signal_arr[i] * ctrl_factor_smooth;
 		dst_signal_arr[i + channel_offset] = src_signal_arr[i + channel_offset] * ctrl_factor_smooth;
